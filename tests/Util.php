@@ -194,11 +194,15 @@ define("IN_PHPUNIT_SERVER", true);
         copy(__DIR__ . '/../Plugin.php', $pluginDir . '/Plugin.php');
         copy(__DIR__ . '/../Action.php', $pluginDir . '/Action.php');
 
-        // 直接调用插件静态 activate() 方法注册路由，无需 widget 实例化
+        // 直接调用插件静态 activate() 方法注册路由，并更新数据库标记插件为已激活
         file_put_contents(self::$typechoDir . '/restful.php', '<?php
 require_once __DIR__ . "/index.php";
 
 Restful_Plugin::activate();
+Typecho\Plugin::activate("Restful");
+$plugins = Typecho\Plugin::export();
+$db = Typecho\Db::get();
+$db->query($db->update("table.options")->rows(["value" => json_encode($plugins)])->where("name = ?", "plugins"));
 ');
 
         $actionUrl = 'http://' . getenv('WEB_SERVER_HOST') . ':' . getenv('WEB_SERVER_PORT') . '/restful.php';
