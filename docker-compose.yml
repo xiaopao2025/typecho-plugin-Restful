@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  typecho:
+    image: joyqi/typecho:nightly-php8.2-apache
+    container_name: typecho-test
+    ports:
+      - "8080:80"
+    environment:
+      - TYPECHO_DB_ADAPTER=Pdo_Mysql
+      - TYPECHO_DB_HOST=mysql
+      - TYPECHO_DB_PORT=3306
+      - TYPECHO_DB_DATABASE=typecho
+      - TYPECHO_DB_USER=typecho
+      - TYPECHO_DB_PASSWORD=typecho
+      - TYPECHO_DB_PREFIX=typecho_
+      - TYPECHO_DB_CHARSET=utf8mb4
+      - TYPECHO_SITE_URL=http://localhost:8080
+      - TYPECHO_USER_NAME=admin
+      - TYPECHO_USER_PASSWORD=admin123
+      - TYPECHO_USER_MAIL=admin@example.com
+    volumes:
+      - ./:/app/usr/plugins/Restful
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - typecho-net
+
+  mysql:
+    image: mysql:5.7
+    container_name: typecho-mysql
+    environment:
+      - MYSQL_DATABASE=typecho
+      - MYSQL_USER=typecho
+      - MYSQL_PASSWORD=typecho
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_CHARSET=utf8mb4
+      - MYSQL_COLLATION=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "typecho", "-ptypecho"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - typecho-net
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  mysql-data:
+
+networks:
+  typecho-net:
+    driver: bridge

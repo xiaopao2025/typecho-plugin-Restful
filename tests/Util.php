@@ -194,15 +194,25 @@ define("IN_PHPUNIT_SERVER", true);
         copy(__DIR__ . '/../Plugin.php', $pluginDir . '/Plugin.php');
         copy(__DIR__ . '/../Action.php', $pluginDir . '/Action.php');
 
-        // 直接调用插件静态 activate() 方法注册路由，并更新数据库标记插件为已激活
+        // 完整的插件激活流程：注册路由 + 内存标记 + 数据库持久化
+        // 注意：使用 table.options 占位符让 Typecho 自动替换为带前缀的表名
         file_put_contents(self::$typechoDir . '/restful.php', '<?php
 require_once __DIR__ . "/index.php";
 
+// 1. 注册路由
 Restful_Plugin::activate();
+
+// 2. 标记内存中插件为已激活
 Typecho\Plugin::activate("Restful");
+
+// 3. 持久化到数据库（使用 Typecho DB query builder）
 $plugins = Typecho\Plugin::export();
 $db = Typecho\Db::get();
-$db->query($db->update("table.options")->rows(["value" => json_encode($plugins)])->where("name = ?", "plugins"));
+$updateResult = $db->query($db->update("table.options")->rows(["value" => json_encode($plugins)])->where("name = ?", "plugins"));
+
+// 4. 验证激活结果
+$verify = $db->fetchRow($db->select("value")->from("table.options")->where("name = ?", "plugins"));
+file_put_contents(__DIR__ . "/activation_log.txt", "updateResult: " . var_export($updateResult, true) . "\nverify: " . var_export($verify, true) . "\n");
 ');
 
         $actionUrl = 'http://' . getenv('WEB_SERVER_HOST') . ':' . getenv('WEB_SERVER_PORT') . '/restful.php';
@@ -211,7 +221,14 @@ $db->query($db->update("table.options")->rows(["value" => json_encode($plugins)]
             'allow_redirects' => false,
         ));
 
-        $client->get($actionUrl);
+        $response = $client->get($actionUrl);
+        $body = $response->getBody()->getContents();
+
+        // 读取激活日志
+        $logUrl = 'http://' . getenv('WEB_SERVER_HOST') . ':' . getenv('WEB_SERVER_PORT') . '/activation_log.txt';
+        $logResponse = $client->get($logUrl);
+        $logBody = $logResponse->getBody()->getContents();
+        file_put_contents(sys_get_temp_dir() . "/activation_log.txt", $logBody);
     }
 
     /**
