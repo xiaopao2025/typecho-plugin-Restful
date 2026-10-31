@@ -22,7 +22,7 @@ class RestfulTest extends TestCase
         self::$client = new Client(array(
             'base_uri' => 'http://' . getenv('WEB_SERVER_HOST') . ':' . getenv('WEB_SERVER_PORT'),
             'http_errors' => false,
-            'proxy' => false,
+            
 
             'headers' => array(
                 'token' => getenv('WEB_SERVER_TOKEN')
