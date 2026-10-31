@@ -194,11 +194,11 @@ define("IN_PHPUNIT_SERVER", true);
         copy(__DIR__ . '/../Plugin.php', $pluginDir . '/Plugin.php');
         copy(__DIR__ . '/../Action.php', $pluginDir . '/Action.php');
 
-        // 使用直接调用 widget 方式激活插件，绕过 CSRF 保护
+        // 直接调用插件静态 activate() 方法注册路由，无需 widget 实例化
         file_put_contents(self::$typechoDir . '/restful.php', '<?php
 require_once __DIR__ . "/index.php";
 
-Typecho_Widget::widget("Widget_Plugins_Edit")->activate("Restful");
+Restful_Plugin::activate();
 ');
 
         $actionUrl = 'http://' . getenv('WEB_SERVER_HOST') . ':' . getenv('WEB_SERVER_PORT') . '/restful.php';

@@ -95,7 +95,8 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
     {
         $httpOrigin = $this->request->getServer('HTTP_ORIGIN');
         $this->response->setHeader('Access-Control-Allow-Credentials', 'true');
-        $allowedHttpOrigins = explode("\n", str_replace("\r", "", $this->config->origin));
+        $origin = $this->config->origin ?? '';
+        $allowedHttpOrigins = explode("\n", str_replace("\r", "", $origin));
 
         if (!$httpOrigin) {
             return;
@@ -259,10 +260,10 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
         $page = is_numeric($page) ? $page : 1;
         $offset = $pageSize * ($page - 1);
 
-        $filterType = trim($this->getParams('filterType', ''));
-        $filterSlug = trim($this->getParams('filterSlug', ''));
-        $showContent = trim($this->getParams('showContent', '')) === 'true';
-        $showDigest = trim($this->getParams('showDigest', ''));
+        $filterType = trim((string)$this->getParams('filterType', ''));
+        $filterSlug = trim((string)$this->getParams('filterSlug', ''));
+        $showContent = trim((string)$this->getParams('showContent', '')) === 'true';
+        $showDigest = trim((string)$this->getParams('showDigest', ''));
 
         if (in_array($filterType, array('category', 'tag', 'search'))) {
             if ($filterSlug == '') {
@@ -310,11 +311,11 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
             ->where('password IS NULL')
             ->order('created', Typecho_Db::SORT_DESC);
         if (isset($cids)) {
-            $cidStr = implode(',', $cids);
+            $cidStr = implode(',', $cids ?? []);
             $select->where('cid IN (' . $cidStr . ')');
         } elseif ($filterType == 'search') {
             // Widget_Archive::searchHandle()
-            $searchQuery = '%' . str_replace(' ', '%', $filterSlug) . '%';
+            $searchQuery = '%' . str_replace(' ', '%', $filterSlug ?? '') . '%';
             $select->where('title LIKE ? OR text LIKE ?', $searchQuery, $searchQuery);
         }
 
@@ -335,10 +336,11 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
                 $result[$key] = $this->filter($result[$key]);
             } elseif ($showDigest === 'excerpt') {
                 // if you use 'excerpt', plugin will truncate for certain number of text
-                $limit = (int)trim($this->getParams('limit', '200'));
+                $limit = (int)trim((string)$this->getParams('limit', '200'));
                 $result[$key] = $this->filter($result[$key]);
+                $text = $result[$key]['text'] ?? '';
                 $result[$key]['digest'] = mb_substr(
-                        htmlspecialchars_decode(strip_tags($result[$key]['text'])),
+                        htmlspecialchars_decode(strip_tags($text)),
                         0,
                         $limit,
                         'utf-8'
@@ -407,7 +409,8 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
             $reflect = new ReflectionObject($categories);
             $map = $reflect->getProperty('_map');
             $map->setAccessible(true);
-            $this->throwData(array_merge($map->getValue($categories)));
+            $mapValue = $map->getValue($categories);
+            $this->throwData(array_merge((array)$mapValue));
         }
     }
 
@@ -657,8 +660,9 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
         $this->lockMethod('get');
         $this->checkState('settings');
 
-        $key = trim($this->getParams('key', ''));
-        $allowed = array_merge(explode(',', $this->config->allowedOptions), array(
+        $key = trim((string)$this->getParams('key', ''));
+        $allowedOptions = $this->config->allowedOptions ?? '';
+        $allowed = array_merge(explode(',', $allowedOptions), array(
             'title', 'description', 'keywords', 'timezone',
         ));
 
@@ -744,9 +748,9 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
     {
         $this->lockMethod('get');
         $this->checkState('archives');
-        $showContent = trim($this->getParams('showContent', '')) === 'true';
+        $showContent = trim((string)$this->getParams('showContent', '')) === 'true';
         $order = strtolower($this->getParams('order', 'desc'));
-        $showDigest = trim($this->getParams('showDigest', ''));
+        $showDigest = trim((string)$this->getParams('showDigest', ''));
 
         $select = $this->db->select('cid', 'title', 'slug', 'created', 'modified', 'type', 'text')
             ->from('table.contents')
@@ -769,10 +773,11 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
 
                 $post = $this->filter($post);
             } elseif ($showDigest === 'excerpt') {
-                $limit = (int)trim($this->getParams('limit', '200'));
+                $limit = (int)trim((string)$this->getParams('limit', '200'));
                 $post = $this->filter($post);
+                $text = $post['text'] ?? '';
                 $post['digest'] = mb_substr(
-                        htmlspecialchars_decode(strip_tags($post['text'])),
+                        htmlspecialchars_decode(strip_tags($text)),
                         0,
                         $limit,
                         'utf-8'
@@ -894,17 +899,17 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
                         ->delete('table.relationships')
                         ->where('cid = ?', $cid);
                     if (!empty($metas)) {
-                        $sql = $sql->where('mid IN (' . implode(',', array_column($metas, 'mid')) . ')');
+                        $sql = $sql->where('mid IN (' . implode(',', array_column($metas ?? [], 'mid')) . ')');
                     }
                     $this->db->query($sql);
                 }
 
-                $midArray = explode(',', $mid);
+                $midArray = explode(',', $mid ?? '');
                 $values = [];
                 foreach ($midArray as $mid) {
                     $values[] = '(' . $cid . ', ' . $mid . ')';
                 }
-                $valuesString = implode(', ', $values);
+                $valuesString = implode(', ', $values ?? []);
                 $sql = "INSERT INTO " . $this->db->getPrefix() . "relationships (`cid`, `mid`) VALUES " . $valuesString . ";";
                 $this->db->query($sql);
 
@@ -1142,7 +1147,7 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
         $tags = $this->db
             ->select('*')
             ->from('table.metas')
-            ->where('mid IN (' . implode(',', $midArray) . ')');
+            ->where('mid IN (' . implode(',', $midArray ?? []) . ')');
         $result = $this->db->fetchAll($tags);
         // 更新数量
         foreach ($result as $tag) {

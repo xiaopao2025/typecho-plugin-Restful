@@ -65,7 +65,8 @@ After changing the prefix, **disable and re-enable the plugin**.
 
 ## Common Gotchas
 - **No namespace** — Typecho plugins run in global namespace
-- **Typecho version** — Requires Typecho 1.3.0+ (PHP 7.4+)
+- **Typecho version** — Requires Typecho 1.3.0+ (PHP 7.4+，支持 PHP 8.1+)
+- **PHP 8.1+ 兼容** — 修复 `explode()`、`trim()`、`str_replace()`、`mb_substr()`、`htmlspecialchars_decode()`、`strip_tags()`、`implode()`、`array_merge()`、`count()` 等函数接收 `null` 参数报错的问题
 - **Cookie names** — `__typecho_uid`, `__typecho_authCode`, `__typecho_remember_author`, `__typecho_remember_mail`
 - **CSRF token** — Generated per-post via `generateCsrfToken()`, validated in `commentAction()`
 - **Database prefix** — Use `$this->db->getPrefix()` or `table.` placeholder (auto-replaced)
