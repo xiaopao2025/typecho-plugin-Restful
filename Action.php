@@ -461,7 +461,7 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
         }
 
         $result = $this->db->fetchRow($select);
-        if (count($result) != 0) {
+        if ($result) {
             $result = $this->filter($result);
             $result['csrfToken'] = $this->generateCsrfToken($result['permalink']);
             $this->throwData($result);
@@ -602,7 +602,7 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
         }
 
         $result = $this->db->fetchRow($select);
-        if (count($result) != 0) {
+        if ($result) {
             $result = $this->filter($result);
         } else {
             $this->throwError('post not exists', 404);
