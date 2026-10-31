@@ -7,7 +7,7 @@
 
 这是一个将 Typecho 博客 RESTful 化的插件。启用此插件，你可以通过请求 API 向站点请求或写入信息（获取文章内容、获取评论、添加评论等）。
 
-**<text style="font-size: 1.2rem">不兼容Typecho1.2以前版本</text>**
+**<text style="font-size: 1.2rem">兼容 Typecho 1.3.0 (PHP 7.4+)</text>**
 
 ## 食用方法
 

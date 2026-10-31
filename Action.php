@@ -30,8 +30,8 @@ class Restful_Action extends Typecho_Widget implements Widget_Interface_Do
      */
     private $httpParams;
 
-    protected $request;
-    protected $response;
+    protected \Typecho\Widget\Request $request;
+    protected \Typecho\Widget\Response $response;
 
     public function __construct($request, $response, $params = null)
     {
