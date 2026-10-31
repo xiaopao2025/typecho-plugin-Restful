@@ -156,7 +156,7 @@ INSERT INTO `typecho_options` (`name`, `user`, `value`) VALUES
 ('markdown',	0,	'1'),
 ('pageSize',	0,	'5'),
 ('panelTable',	0,	'a:0:{}'),
-('plugin:Restful',	0,	'a:12:{s:5:\"posts\";i:1;s:5:\"pages\";i:1;s:10:\"categories\";i:1;s:4:\"tags\";i:1;s:4:\"post\";i:1;s:8:\"comments\";i:1;s:7:\"comment\";i:1;s:8:\"settings\";i:1;s:5:\"users\";i:1;s:8:\"archives\";i:1;s:6:\"origin\";N;s:8:\"csrfSalt\";s:32:\"05faabd6637f7e30c797973a558d4372\";}'),
+('plugin:Restful',	0,	'a:18:{s:5:"posts";i:1;s:5:"pages";i:1;s:10:"categories";i:1;s:4:"tags";i:1;s:4:"post";i:1;s:8:"comments";i:1;s:7:"comment";i:1;s:8:"settings";i:1;s:5:"users";i:1;s:8:"archives";i:1;s:8:"userList";i:1;s:11:"postArticle";i:1;s:8:"addMetas";i:1;s:6:"origin";N;s:8:"csrfSalt";s:32:"05faabd6637f7e30c797973a558d4372";s:13:"validateLogin";i:0;s:8:"apiToken";s:6:"123456";s:13:"fieldsPrivacy";s:0:"";s:14:"allowedOptions";s:0:"";}'),
 ('plugins',	0,	'a:2:{s:9:\"activated\";a:1:{s:7:\"Restful\";a:1:{s:7:\"handles\";a:1:{s:23:\"Widget_Feedback:comment\";a:1:{i:0;a:2:{i:0;s:14:\"Restful_Plugin\";i:1;s:7:\"comment\";}}}}}s:7:\"handles\";a:1:{s:23:\"Widget_Feedback:comment\";a:1:{i:0;a:2:{i:0;s:14:\"Restful_Plugin\";i:1;s:7:\"comment\";}}}}'),
 ('postDateFormat',	0,	'Y-m-d'),
 ('postsListSize',	0,	'10'),
