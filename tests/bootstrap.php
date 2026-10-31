@@ -22,6 +22,21 @@ $server = new Serve(array(
 
 $server->start();
 
+// Wait for server to be ready
+$host = getenv('WEB_SERVER_HOST');
+$port = getenv('WEB_SERVER_PORT');
+$maxRetries = 30;
+$retryInterval = 100000; // 100ms
+
+for ($i = 0; $i < $maxRetries; $i++) {
+    $fp = @fsockopen($host, $port, $errno, $errstr, 1);
+    if ($fp) {
+        fclose($fp);
+        break;
+    }
+    usleep($retryInterval);
+}
+
 // Kill the web server when the process ends
 register_shutdown_function(function () use ($server) {
     $server->stop();
