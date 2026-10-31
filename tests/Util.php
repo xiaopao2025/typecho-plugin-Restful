@@ -36,11 +36,11 @@ class Util
     {
         $progressBar = new Manager(0, 1000);
 
-        $url = 'https://github.com/typecho/typecho/archive/refs/tags/v1.2.1.tar.gz';
+        $url = 'https://github.com/typecho/typecho/archive/refs/tags/v1.3.0.tar.gz';
         $fileName = basename($url);
         $filePath = self::$tmpPath . $fileName;
 
-        self::$typechoDir = self::$tmpPath . 'typecho-1.2.1';
+        self::$typechoDir = self::$tmpPath . 'typecho-1.3.0';
 
         if (is_dir(self::$typechoDir)) {
             echo 'typecho already downloaded' . PHP_EOL;
@@ -194,19 +194,27 @@ define("IN_PHPUNIT_SERVER", true);
         copy(__DIR__ . '/../Plugin.php', $pluginDir . '/Plugin.php');
         copy(__DIR__ . '/../Action.php', $pluginDir . '/Action.php');
 
-        file_put_contents(self::$typechoDir . '/restful.php', "<?php
-require_once __DIR__ . '/index.php';
-
-call_user_func_array([Typecho_Widget::widget('Widget_Plugins_Edit'), Typecho_Request::getInstance()->get('action')], ['Restful']);
-");
-        $actionUrl = 'http://' . getenv('WEB_SERVER_HOST') . ':' . getenv('WEB_SERVER_PORT') . '/restful.php';
+        // 使用标准的 Typecho 后台 URL 来激活插件
+        $actionUrl = 'http://' . getenv('WEB_SERVER_HOST') . ':' . getenv('WEB_SERVER_PORT') . '/action/plugins-edit';
 
         $client = new Client(array(
             'allow_redirects' => false,
+            'headers' => [
+                'Referer' => 'http://' . getenv('WEB_SERVER_HOST') . ':' . getenv('WEB_SERVER_PORT') . '/admin/',
+            ],
         ));
 
-        $client->get($actionUrl . '?action=deactivate');
-        $client->get($actionUrl . '?action=activate');
+        // 先禁用再启用（可能已启用）
+        $client->post($actionUrl, [
+            'form_params' => [
+                'deactivate' => 'Restful',
+            ],
+        ]);
+        $client->post($actionUrl, [
+            'form_params' => [
+                'activate' => 'Restful',
+            ],
+        ]);
     }
 
     /**
